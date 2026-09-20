@@ -1,0 +1,54 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+.kotlin
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Frontend (Vue + Vite) ###
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.local
+# 前端本地环境配置（含有真实接口地址等）
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+### 项目本地文件（私人笔记、AI 工作记忆等，不应共享） ###
+/.workbuddy/
+
+### 个人 Spring Boot profile 配置（真实数据库密码等） ###
+# 占位符版本（application.yml）会上传；个人 dev/prod 配置不上传
+**/application-*.yml
+!**/application.yml

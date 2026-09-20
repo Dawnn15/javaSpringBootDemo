@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: javaSpringBootDemo
+
+  # ================= 数据源 =================
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 四个关键参数一个都不能少：
+    #   characterEncoding=utf8  -> 中文不乱码
+    #   serverTimezone          -> 不报时区错，时间不差 8 小时
+    #   useSSL=false            -> 去掉一堆 SSL 警告
+    #   allowPublicKeyRetrieval -> MySQL 8+ caching_sha2_password 认证必须
+    url: "jdbc:mysql://localhost:3306/demo_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+    # 密码走环境变量，IDE/命令行启动时设 DB_PASSWORD 即可
+    # 默认值 123456 仅方便本地起跑；部署/共享时必须通过环境变量覆盖
+    username: root
+    password: "${DB_PASSWORD:123456}"
+
+  # ================= Jackson =================
+  jackson:
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+
+# ================= MyBatis-Plus =================
+mybatis-plus:
+  configuration:
+    # 数据库 create_time -> Java createTime 自动映射
+    map-underscore-to-camel-case: true
+    # 控制台打印真实执行的 SQL，学习期强烈建议开着
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+# ================= 日志 =================
+logging:
+  level:
+    root: info
+    org.example: debug
