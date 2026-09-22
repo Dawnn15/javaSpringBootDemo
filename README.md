@@ -6,6 +6,21 @@
 
 > GitHub: https://github.com/Dawnn15/javaSpringBootDemo
 
+## ⚡ 仓库里有两套数据层实现（对照学习）
+
+| 分支 | 数据层 | 适合谁 |
+|---|---|---|
+| **`main`** ← 你在这里 | MyBatis-Plus 3.5.12 | 业务项目首选，CRUD 不用写 SQL |
+| **`feat/mybatis-pure`** | 原生 MyBatis 3.0.5 | 想看清「MP 到底替你干了什么」 |
+
+切换看不同实现：
+```bash
+git checkout main              # 当前：MP 版
+git checkout feat/mybatis-pure # 对照：原生 MyBatis 版
+```
+
+详细对照在 [`docs/04-MyBatis改造过程与MyBatis-Plus对照.md`](./docs/04-MyBatis改造过程与MyBatis-Plus对照.md)
+
 ---
 
 ## 一、技术栈
