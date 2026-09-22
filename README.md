@@ -2,9 +2,24 @@
 
 一个前后端分离的**待办事项（Todo）全栈示例**，适合 Spring Boot + Vue 入门练习。
 
-后端走 Spring Boot 3 + MyBatis-Plus + MySQL，前端用 Vue 3 + Vite + 原生 fetch。
+后端走 Spring Boot 3 + 数据层（二选一）+ MySQL，前端用 Vue 3 + Vite + 原生 fetch。
 
 > GitHub: https://github.com/Dawnn15/javaSpringBootDemo
+
+## ⚡ 两个分支，两种数据层实现（对照学习）
+
+| 分支 | 数据层 | 适合谁 |
+|---|---|---|
+| **`main`** | MyBatis-Plus 3.5.12 | 业务项目首选，CRUD 不用写 SQL |
+| **`feat/mybatis-pure`** | 原生 MyBatis 3.0.5 | 想看清「MP 到底替你干了什么」 |
+
+切换看不同实现：
+```bash
+git checkout main              # 看 MP 版
+git checkout feat/mybatis-pure # 看原生版
+```
+
+详细对照在 [`docs/04-MyBatis改造过程与MyBatis-Plus对照.md`](./docs/04-MyBatis改造过程与MyBatis-Plus对照.md)
 
 ---
 
@@ -13,7 +28,7 @@
 | 层 | 技术 | 版本 |
 |---|---|---|
 | 后端 | Spring Boot | 3.5.16 |
-| 数据层 | MyBatis-Plus | 3.5.12 |
+| 数据层 | MyBatis-Plus **或** 原生 MyBatis | 3.5.12 / 3.0.5（按分支） |
 | 数据库 | MySQL | 8.0+ / 9.x |
 | 构建工具 | Maven | 3.9+ |
 | 前端 | Vue 3 + Vite | 3.5.x / 8.3.x |
