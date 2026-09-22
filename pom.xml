@@ -17,21 +17,16 @@
     <artifactId>javaSpringBootDemo</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>javaSpringBootDemo</name>
-    <description>Spring Boot 3 + MySQL + MyBatis-Plus 入门示例</description>
+    <description>Spring Boot 3 + MySQL + 原生 MyBatis 入门示例（对照 MP 版本保留在 main 分支）</description>
 
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--
-            版本说明：这里刻意「不」用最新的 3.5.17。
-            MyBatis-Plus 在 3.5.13 之后做了一次包路径重构：
-              IService / ServiceImpl 从 com.baomidou.mybatisplus.extension.service.*
-                                     挪到了 com.baomidou.mybatisplus.spring.service.*
-            用 3.5.17 时，网上绝大多数的教程、示例代码（import 写的都是 extension.service）
-            全部会报「程序包不存在」。
-            3.5.12 是重构前的稳定版，包路径与主流资料一致，学习期踩坑最少。
+            原生 MyBatis 用 starter 3.0.5（Spring Boot 3 兼容线的稳定版本）。
+            这个分支里「不」使用 MyBatis-Plus，所有 CRUD SQL 都得自己手写。
         -->
-        <mybatis-plus.version>3.5.12</mybatis-plus.version>
+        <mybatis.version>3.0.5</mybatis.version>
     </properties>
 
     <dependencies>
@@ -41,18 +36,11 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- MyBatis-Plus：单表增删改查不用写 SQL。必须是 spring-boot3 后缀的 starter -->
+        <!-- 原生 MyBatis：单表增删改查都要自己写 SQL（注解式或 XML） -->
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-            <version>${mybatis-plus.version}</version>
-        </dependency>
-
-        <!-- MyBatis-Plus 3.5.9 起把 SQL 解析器拆成独立模块，分页插件依赖它 -->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-jsqlparser</artifactId>
-            <version>${mybatis-plus.version}</version>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>${mybatis.version}</version>
         </dependency>
 
         <!-- MySQL 驱动：版本由 Spring Boot BOM 统一管理，不写 version -->

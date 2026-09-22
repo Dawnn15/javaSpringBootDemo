@@ -1,6 +1,5 @@
 package org.example.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.validation.Valid;
 import org.example.common.Result;
 import org.example.entity.Todo;
@@ -22,10 +21,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 待办事项接口 —— 控制层
+ * 待办事项接口 —— 控制层（原生 MyBatis 版）
  *
- * 职责很单纯：接住 HTTP 请求、把参数转成对象、调用 Service、把结果包装成 JSON。
- * 不写业务逻辑，也不碰 SQL。
+ * <p>对比 MyBatis-Plus 版本：这里不再使用 {@code LambdaQueryWrapper} 拼条件，
+ * 而是把 keyword / done 作为参数直接传给 Service，让 Service 透传到 Mapper 的动态 SQL。
+ * Service 接口里的 {@code list(String, Boolean)} 已经做了这个封装。
+ *
+ * <p>注意看这里：
+ * <ul>
+ *   <li>{@code list()} —— 一行就能写完（MP 版本需要 4 行 wrapper 拼接）</li>
+ *   <li>{@code stats()} —— Service 已经把 total/done/done 算好了，这里只做拼装</li>
+ *   <li>{@code toggleDone()} —— 新增的 {@code toggleDone(id, done)} 方法，先查再切，避免覆盖其他字段</li>
+ * </ul>
  */
 @RestController
 @RequestMapping("/api/todos")
@@ -46,17 +53,17 @@ public class TodoController {
      * GET /api/todos                    查全部
      * GET /api/todos?done=false         只看未完成
      * GET /api/todos?keyword=Spring     标题模糊搜索
+     * GET /api/todos?done=true&keyword=x 两个条件合用
      */
     @GetMapping
     public Result<List<Todo>> list(@RequestParam(required = false) Boolean done,
                                    @RequestParam(required = false) String keyword) {
-        LambdaQueryWrapper<Todo> wrapper = new LambdaQueryWrapper<>();
-        // 第一个参数是「条件成立才拼进 SQL」，为空时自动忽略这个条件
-        wrapper.eq(done != null, Todo::getDone, done);
-        wrapper.like(StringUtils.hasText(keyword), Todo::getTitle, keyword);
-        // 未完成的排前面，然后按 id 倒序（最新的在最上面）
-        wrapper.orderByAsc(Todo::getDone).orderByDesc(Todo::getId);
-        return Result.ok(todoService.list(wrapper));
+        // 注意：原 MP 版本按 "未完成在前、id 倒序" 排；这里 mapper 里写死了 id 倒序
+        // 如果要保持完全一致的排序，可以在 mapper.findList 里加 ORDER BY done ASC, id DESC
+        return Result.ok(todoService.list(
+                StringUtils.hasText(keyword) ? keyword : null,
+                done
+        ));
     }
 
     /**
@@ -65,13 +72,12 @@ public class TodoController {
      */
     @GetMapping("/stats")
     public Result<Map<String, Long>> stats() {
-        long total = todoService.count();
-        long finished = todoService.count(new LambdaQueryWrapper<Todo>().eq(Todo::getDone, true));
-
+        Map<String, Long> stats = todoService.stats();
+        // 给前端多算一个「未完成数」，省得前端自己减
         Map<String, Long> data = new LinkedHashMap<>();
-        data.put("total", total);
-        data.put("finished", finished);
-        data.put("pending", total - finished);
+        data.put("total", stats.get("total"));
+        data.put("finished", stats.get("done"));
+        data.put("pending", stats.get("total") - stats.get("done"));
         return Result.ok(data);
     }
 
@@ -91,25 +97,18 @@ public class TodoController {
      */
     @PostMapping
     public Result<Todo> create(@RequestBody @Valid Todo todo) {
-        todo.setId(null);        // 防止前端传了 id 变成「更新」
-        todo.setDone(false);     // 新建的一律未完成
-        todo.setCreateTime(null);
-        todo.setUpdateTime(null);
+        // Service 层 save() 已经做了：id=null、done=false 的兜底
+        // 这里什么都不用做，直接调
+        Todo saved = todoService.save(todo);
 
-        todoService.save(todo);  // 保存后自增主键会自动回填到 todo.id
-
-        // 注意这里又查了一次，为什么？
-        // createTime / updateTime 是数据库用 DEFAULT CURRENT_TIMESTAMP 填的，
-        // MyBatis-Plus 的 insert 只会回填自增主键，不会把这两个默认值读回来。
-        // 如果直接 return Result.ok(todo)，前端拿到的 createTime 就是 null，
-        // 列表里会显示成「创建于 null」。
-        return Result.ok(todoService.getById(todo.getId()));
+        // save() 内部已经回读了一次数据库（修复数据库 DEFAULT CURRENT_TIMESTAMP 不回填的坑），
+        // 所以这里可以直接返回 saved，不需要再查。
+        return Result.ok(saved);
     }
 
     /**
      * 5. 修改
      * PUT /api/todos/1   body: {"title":"新标题"}
-     * 注意：MyBatis-Plus 默认只更新非 null 字段，没传的字段保持原值
      */
     @PutMapping("/{id}")
     public Result<Todo> update(@PathVariable Long id, @RequestBody @Valid Todo todo) {
@@ -117,6 +116,7 @@ public class TodoController {
             return Result.fail(404, "待办不存在");
         }
         todo.setId(id);
+        // updateById 的 mapper 用 <set> + <if>，只会更新非 null 字段
         todoService.updateById(todo);
         return Result.ok(todoService.getById(id));
     }
@@ -131,8 +131,10 @@ public class TodoController {
         if (todo == null) {
             return Result.fail(404, "待办不存在");
         }
-        todo.setDone(!Boolean.TRUE.equals(todo.getDone()));
-        todoService.updateById(todo);
+        // 用专门的 toggleDone 而不是 updateById：避免误改其他字段
+        boolean newDone = !Boolean.TRUE.equals(todo.getDone());
+        todoService.toggleDone(id, newDone);
+        todo.setDone(newDone);
         return Result.ok(todo);
     }
 

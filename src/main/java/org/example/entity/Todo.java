@@ -1,8 +1,5 @@
 package org.example.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -13,14 +10,17 @@ import java.time.LocalDateTime;
 /**
  * 待办事项实体 —— 对应数据库表 todo
  *
- * 类比：货架上的货物，各层之间传递的标准集装箱
+ * <p>对比 MyBatis-Plus 版本：本类去掉了：
+ * <ul>
+ *   <li>{@code @TableName("todo")} —— 原生 MyBatis 通过 {@code resultMap} 或注解映射表名，不需要它</li>
+ *   <li>{@code @TableId(type = IdType.AUTO)} —— 通过 {@code @Options(useGeneratedKeys=true, keyProperty="id")} 在 Mapper 上声明主键回填</li>
+ * </ul>
+ * 字段名、表名、类型保持完全一致，对照时只看差异行就行。
  */
 @Data
-@TableName("todo")
 public class Todo {
 
-    /** 主键。IdType.AUTO 表示由数据库自增生成，插入后会自动回填到这个字段 */
-    @TableId(type = IdType.AUTO)
+    /** 主键。由数据库自增，插入时通过 Mapper 的 @Options 回填到这个字段 */
     private Long id;
 
     /** 标题，必填 */

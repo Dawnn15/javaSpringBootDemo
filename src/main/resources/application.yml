@@ -25,18 +25,17 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
-# ================= MyBatis-Plus =================
-mybatis-plus:
+# ================= 原生 MyBatis =================
+mybatis:
   configuration:
-    # 数据库 create_time -> Java createTime 自动映射
+    # 数据库 create_time -> Java createTime 自动映射（下划线转驼峰）
     map-underscore-to-camel-case: true
     # 控制台打印真实执行的 SQL，学习期强烈建议开着
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  global-config:
-    banner: false
-    db-config:
-      id-type: auto
+  # 告诉 MyBatis 去哪儿找 XML 映射文件（注解式 SQL 不需要，但留这一行作为进阶用法入口）
   mapper-locations: classpath*:/mapper/**/*.xml
+  # 起别名：xml 里写 "Todo" 就行，不用写完整类名
+  type-aliases-package: org.example.entity
 
 # ================= 日志 =================
 logging:
